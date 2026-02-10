@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="POS.Client/POS.Client.csproj" Id="b85533dd-4cc8-4be1-9088-8e2a7fe74a07" />
+  <Project Path="POS.Server/POS.Server.csproj" Id="c5551856-5fad-4e35-aa42-a426c4b26bf7" />
+  <Project Path="POS.Shared/POS.Shared.csproj" Id="76bda6f7-376e-4c2e-a4a0-58020cdbbfeb" />
+</Solution>
