@@ -1,0 +1,97 @@
+﻿@page "/login"
+
+
+<MudContainer MaxWidth="MaxWidth.ExtraSmall" Class="mt-10">
+    <MudPaper Class="pa-6 rounded-lg" Elevation="25">
+        <MudIcon Icon="@Icons.Material.Filled.Business"
+                 Color="Color.Primary"
+                 Size="Size.Large"
+                 Class="d-block mx-auto mb-2" />
+        <MudText Typo="Typo.h4" Color="Color.Primary" Class="mb-6 text-center">POS System</MudText>
+        <MudText Typo="Typo.h6" Class="mb-6 text-center">Login</MudText>
+        <MudTextField @bind-Value="login.Email" Label="Email" Variant="Variant.Outlined"
+                      FullWidth="true" Margin="Margin.Dense" Required="true"
+                      HelperText="Please enter your email." />
+
+        <MudTextField @bind-Value="login.Password" Label="Password" Variant="Variant.Outlined"
+                      FullWidth="true" Margin="Margin.Dense" InputType="@PasswordInput"
+                      Required="true" HelperText="Please enter your password."
+                      Class="mt-4" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon"
+                      OnAdornmentClick="ButtonTestclick" AdornmentAriaLabel="Show Password" />
+
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="w-100 mt-6"
+                   OnClick="HandleLogin">Login</MudButton>
+
+        <MudText Class="mt-4 text-center">
+            Don't have an account? <MudLink Href="/register" Color="Color.Primary">Regíster here</MudLink>
+        </MudText>
+        <MudText Class="mt-4 text-center">
+            Forgot password? <MudLink Href="/resetPassword" Color="Color.Primary">Recover password</MudLink>
+        </MudText>
+    </MudPaper>
+</MudContainer>
+
+@code {
+
+    private readonly LoginRequest login = new();
+    public string Password { get; set; } = string.Empty;
+
+    [Inject] private HttpClient HttpClient { get; set; } = null!;
+    [Inject] private ISnackbar Snackbar { get; set; } = null!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
+    [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = null!;
+    [Inject] private ILoginService LoginService { get; set; } = null!;
+
+    private bool isShow;
+    private InputType PasswordInput = InputType.Password;
+    private string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+
+    protected override void OnInitialized()
+    {
+        Password = login.Password;
+    }
+
+    private void ButtonTestclick()
+    {
+        if (isShow)
+        {
+            isShow = false;
+            PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+            PasswordInput = InputType.Password;
+        }
+        else
+        {
+            isShow = true;
+            PasswordInputIcon = Icons.Material.Filled.Visibility;
+            PasswordInput = InputType.Text;
+        }
+    }
+
+    private async Task HandleLogin()
+    {
+        try
+        {
+            var url = "api/auth/login";
+            var response = await HttpClient.PostAsJsonAsync(url, login);
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                var loginResponse = JsonSerializer.Deserialize<AuthResponse>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                if (loginResponse != null && loginResponse.IsActive)
+                {
+                    await ((CustomAuthProvider)AuthenticationStateProvider).Login(loginResponse.Token);
+                    NavigationManager.NavigateTo("/");
+                }
+            }
+            else
+            {
+                Snackbar.Add("Invalid Credential. Try again.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al iniciar sesión: {ex.Message}", Severity.Error);
+        }
+    }
+}

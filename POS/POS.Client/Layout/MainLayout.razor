@@ -1,4 +1,5 @@
-﻿@inherits LayoutComponentBase
+﻿
+@inherits LayoutComponentBase
 
 @* Required *@
 <MudThemeProvider Theme="_currentTheme" @bind-IsDarkMode="_isDarkMode" />
@@ -15,7 +16,9 @@
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudText Typo="Typo.h5" Class="ml-3">POS System</MudText>
         <MudSpacer />
-
+         <MudText Typo="Typo.body1" Style="color: white; margin-right: 16px;">
+            <AuthLinks/>
+        </MudText>
         <MudToggleIconButton @bind-Toggled="@_isDarkMode" 
         Icon="@Icons.Material.Filled.DarkMode" Color="Color.Inherit" title="Dark Mode"
         ToggledIcon="@Icons.Material.Filled.LightMode" ToggledColor="Color.Warning" Class="ml-4"/>
