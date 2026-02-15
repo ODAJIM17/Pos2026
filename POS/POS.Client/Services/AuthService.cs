@@ -18,7 +18,7 @@ namespace POS.Client.Services
         {
             var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
             var user = authState.User;
-            return user.FindFirst("unique_name")?.Value;
+            return user.FindFirst("Name")?.Value;
         }
 
         public async Task<string?> GetNameAsync()
