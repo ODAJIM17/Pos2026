@@ -15,20 +15,9 @@ namespace POS.Server.Repositories
             return category;
         }
 
-        public async Task<bool> DeleteAsync(int id)
-        {
-            var category = await _context.Categories.FindAsync(id);
-            if (category == null)
-            {
-                return false;
-            }
-            _context.Categories.Remove(category);
-            return await SaveChangesAsync();
-        }
-
         public async Task<IEnumerable<Category>> GetAllAsync()
         {
-            return await _context.Categories.ToListAsync();
+            return await _context.Categories.Where(c => c.IsActive).ToListAsync();
         }
 
         public async Task<Category> GetByIdAsync(int id)

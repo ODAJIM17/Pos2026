@@ -12,8 +12,6 @@ namespace POS.Server.Repositories
 
         Task<Category> UpdateAsync(Category category);
 
-        Task<bool> DeleteAsync(int id);
-
         Task<bool> SaveChangesAsync();
     }
 }

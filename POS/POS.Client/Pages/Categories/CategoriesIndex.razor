@@ -1,0 +1,305 @@
+﻿@page "/categories"
+
+@inject IRequestService RequestService
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudPaper Elevation="0" Class="pa-6">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-6">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Icon="@Icons.Material.Filled.List" Size="Size.Large" Color="Color.Primary" />
+                <MudText Typo="Typo.h5" Color="Color.Primary">
+                    <b>List of Categories</b>
+                </MudText>
+            </MudStack>
+
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Size="Size.Large"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="ToggleCreate">
+            Add Category
+        </MudButton>
+        </MudStack>
+   
+        <!-- Create Form-->
+        <MudCollapse Expanded="showCreate">
+            <MudPaper Elevation="4" Class="pa-4 mb-4 mt-4" Style="border-left: 4px solid var(--mud-pallete)">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                    <MudText Typo="Typo.h6" Color="Color.Primary">
+                        <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-2" />
+                        Create New Category
+                    </MudText>
+                    <MudIconButton Icon="@Icons.Material.Filled.Close"
+                    Color="Color.Default"
+                    OnClick="() => showCreate = false"/>
+                </MudStack>
+                <MudGrid>
+                     <MudItem xs="12" sm="12">
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="createModel.Name"
+                        Label="Name"
+                        Variant="Variant.Outlined"/>                    
+                    </MudItem>
+                     <MudItem xs="12" sm="12">
+                        <MudTextField @bind-Value="createModel.Description"
+                                      Label="Description"
+                                      Variant="Variant.Outlined" 
+                                      Lines="3"/>
+                     </MudItem>
+                      <MudItem xs="12" Class="mt-2">
+                          <MudStack Row="true" Spacing="2">
+                              <MudButton Color="Color.Secondary" 
+                              Variant="Variant.Filled" 
+                              StartIcon="@Icons.Material.Filled.Save" OnClick="HandleCreate">
+                              Submit
+                          </MudButton>
+                            <MudButton Color="Color.Default"
+                                       Variant="Variant.Outlined"
+                                       StartIcon="@Icons.Material.Filled.Cancel" 
+                                       OnClick="() => showCreate = false">
+                                Cancel
+                            </MudButton>
+                          </MudStack>
+                      </MudItem>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        </MudCollapse>
+    </MudPaper>
+
+    <!-- Edit Form-->
+    @if (editingCategory != null)
+    {
+        <MudPaper Elevation="8" Class="pa-4 mb-4 mt-4">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Style="border-left: 4px solid var(--mud-pallete)">
+                <MudText Typo="Typo.h6" Color="Color.Info">
+                    <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-2" />
+                    Edit Category - @editingCategory.Name
+                </MudText>
+                <MudIconButton Color="Color.Default"
+                           Icon="@Icons.Material.Filled.Close"
+                           OnClick="CancelEdit">
+                    Cancel
+                </MudIconButton>
+            </MudStack>
+            <MudGrid>
+                <MudItem xs="12" sm="12">
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="editingCategory.Name"
+                                      Label="Name"
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+                    <MudItem xs="12" sm="12">
+                        <MudTextField @bind-Value="editingCategory.Description"
+                                      Label="Description"
+                                      Variant="Variant.Outlined"
+                                      Lines="3" />
+                    </MudItem>
+                    <MudItem xs="12" Class="mt-2">
+                        <MudStack Row="true" Spacing="2">
+                            <MudButton Color="Color.Info" 
+                            Variant="Variant.Filled" 
+                            StartIcon="@Icons.Material.Filled.Save" 
+                            OnClick="HandleUpdate">
+                            Update
+                            </MudButton>
+                            <MudButton Color="Color.Default"
+                                       Variant="Variant.Outlined"
+                                       StartIcon="@Icons.Material.Filled.Cancel"
+                                       OnClick="CancelEdit">
+                                Cancel
+                            </MudButton>
+                        </MudStack>
+                    </MudItem>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    }
+
+    <!-- List -->
+    @if (isLoading)
+    {
+        <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Class="py-8">
+            <MudProgressCircular  Indeterminate="true" Color="Color.Primary" Size="Size.Large"/>
+            <MudText Typo="Typo.subtitle1" Color="Color.Primary">Loading categories...</MudText>
+        </MudStack>
+    }
+    else
+    {
+        <MudPaper Elevation="2" Class="mt-4">
+            <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
+                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="px3 mb-3 mt-0"></MudTextField>
+            <MudTable Items="Categories" Hover="true" Striped="true"  Elevation="0" Filter="new Func<CategoryDto,bool>(FilterFunc)">
+                <HeaderContent>
+                    <MudTh>Name</MudTh>
+                    <MudTh>Description</MudTh>
+                    <MudTh Style="text-align:right;">Actionns</MudTh>        
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Name">@context.Name</MudTd>
+                    <MudTd DataLabel="Description">@context.Description</MudTd>
+                   <MudTd Style="text-align: right;">
+                       <MudTooltip Text="Edit">
+                           <MudIconButton Size="Size.Small"
+                                          Icon="@Icons.Material.Filled.Edit" 
+                                          Color="Color.Primary" 
+                                          OnClick="() => StartEdit(context)" />
+                       </MudTooltip>
+                        <MudTooltip Text="Del">
+                            <MudIconButton Size="Size.Small"
+                                           Icon="@Icons.Material.Filled.Delete"
+                                           Color="Color.Error"
+                                           OnClick="() => Delete(context)" />
+                        </MudTooltip>
+                   </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
+        </MudPaper>
+    }
+
+</MudContainer>
+
+@code {
+
+    private List<CategoryDto> Categories = new();
+    private bool isLoading = true;
+    private bool showCreate = false;
+    private CreateCategory createModel = new();
+    private CategoryDto? editingCategory;
+    private string searchString = "";
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        // return base.OnInitializedAsync();
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+        var url = "api/categories";
+        var result = await RequestService.GetAsync<List<CategoryDto>>(url);
+        if(result != null)
+        {
+            Categories = result.ToList();
+        }
+
+        isLoading = false;
+    }
+
+    
+
+    private async Task ToggleCreate()
+    {
+        showCreate = !showCreate;
+        if (showCreate) CancelEdit();
+    }
+
+    private async Task HandleCreate()
+    {
+        if (string.IsNullOrWhiteSpace(createModel.Name))
+        {
+            Snackbar.Add("Category name es required", Severity.Error);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(createModel.Description))
+        {
+            Snackbar.Add("Description es required", Severity.Error);
+            return;
+        }
+
+        var url = "api/categories";
+        var result = await RequestService.PostAsync(url, createModel);
+        if(result != null)
+        {
+            showCreate = false;
+            createModel = new();
+            await LoadData();
+            Snackbar.Add("Category created successfully", Severity.Success);
+
+        }
+        else
+        {
+            Snackbar.Add("Error creating this category", Severity.Error);
+        }
+
+    }
+
+    private void StartEdit(CategoryDto category)
+    {
+        showCreate = false;
+        editingCategory = new CategoryDto
+            {
+                Id = category.Id,
+                Name = category.Name,
+                Description = category.Description,
+                IsActive = category.IsActive
+            };
+    }
+
+    private void CancelEdit()
+    {
+        editingCategory = null;
+    }
+
+
+    private async Task HandleUpdate()
+    {
+        if (editingCategory == null) return;
+        var updateDto = new EditCatgory
+            {
+                Name = editingCategory.Name,
+                Description = editingCategory.Description,
+                IsActive = editingCategory.IsActive
+            };
+
+        var url = $"api/categories/{editingCategory.Id}";
+        var result = await RequestService.PutAsync(url, updateDto);
+        if(result != null)
+        {
+            editingCategory = null;
+            await LoadData();
+            Snackbar.Add("Category updated successfully", Severity.Success);
+        }
+    }
+
+
+    private async Task Delete(CategoryDto category)
+    {
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", $"Delete category? {category.Name}"))
+            return;
+
+        var deleteDto = new EditCatgory
+            {
+                Name = category.Name,
+                Description = category.Description,
+                IsActive = false
+            };
+
+        var url = $"api/categories/{category.Id}";
+        var result = await RequestService.PutAsync(url, deleteDto);
+        if(result != null)
+        {
+            await LoadData();
+            Snackbar.Add("Category deletes.", Severity.Warning);
+        }
+    }
+
+    private bool FilterFunc(CategoryDto element)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+            return false;
+    }
+}

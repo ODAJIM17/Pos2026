@@ -20,6 +20,7 @@ namespace POS.Client
 
             builder.Services.AddMudServices();
             builder.Services.AddAuthorizationCore();
+            builder.Services.AddScoped<IRequestService, RequestService>();
             builder.Services.AddScoped<CustomAuthProvider>();
             builder.Services.AddScoped<AuthService>();
             builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthProvider>(x => x.GetRequiredService<CustomAuthProvider>());

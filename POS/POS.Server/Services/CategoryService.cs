@@ -25,11 +25,6 @@ namespace POS.Server.Services
             };
         }
 
-        public async Task<bool> DeleteAsync(int id)
-        {
-            return await _categoryRepository.DeleteAsync(id);
-        }
-
         public async Task<IEnumerable<CategoryDto>> GetAllAsync()
         {
             var categories = await _categoryRepository.GetAllAsync();
@@ -61,6 +56,7 @@ namespace POS.Server.Services
 
             category.Name = request.Name;
             category.Description = request.Description;
+            category.IsActive = request.IsActive;
 
             var updateCategory = await _categoryRepository.UpdateAsync(category);
             return new CategoryDto
@@ -68,6 +64,7 @@ namespace POS.Server.Services
                 Id = updateCategory.Id,
                 Name = updateCategory.Name,
                 Description = updateCategory.Description,
+                IsActive = updateCategory.IsActive,
             };
         }
     }

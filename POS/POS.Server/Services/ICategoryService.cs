@@ -11,7 +11,5 @@ namespace POS.Server.Services
         Task<CategoryDto> CreateAsync(CreateCategory request);
 
         Task<CategoryDto> UpdateAsync(int id, EditCatgory request);
-
-        Task<bool> DeleteAsync(int id);
     }
 }
